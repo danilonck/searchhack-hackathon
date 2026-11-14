@@ -1,0 +1,13 @@
+# Segredos: NUNCA vão para o git
+.env
+.env.*
+!.env.example
+
+# Ambiente Python
+.venv/
+__pycache__/
+*.pyc
+
+# Sistema / Streamlit
+.DS_Store
+.streamlit/secrets.toml
