@@ -12,27 +12,26 @@ import config
 from llm import chat
 
 ROTAS = {"memoria", "web", "ambos"}
+ROTA_DO_MODELO = {"memory": "memoria", "web": "web", "both": "ambos"}
 
 SYSTEM = """You are the search planner of a personal assistant.
 You receive the user's QUESTION and MEMORIES (facts we already know about this user).
 Decide where the answer must come from:
-- "memoria": the memories alone fully answer it (personal facts, preferences, plans). No web search.
+- "memory": the memories alone fully answer it (personal facts, preferences, plans). No web search.
 - "web": it needs current facts about the world and the memories add nothing useful.
-- "ambos": it needs current web facts AND the memories change what to look for
+- "both": it needs current web facts AND the memories change what to look for
   (location, diet, budget, schedule, tastes...).
 
-For "web" or "ambos", write 1 or 2 web search queries in English,
+For "web" or "both", write 1 or 2 web search queries in English,
 REWRITTEN with the relevant memory details so results are personalized.
 Example: question "good restaurants?" + memories "vegetarian", "in Sunnyvale",
 "budget up to $30" -> "vegetarian restaurants in Sunnyvale CA under $30".
-For "memoria", consultas_web must be [].
+For "memory", web_queries must be [].
 
-LANGUAGE of "motivo": write it in the language the QUESTION is written in
-(English question -> English; Portuguese question -> Portuguese). The JSON keys
-are just identifiers: do NOT pick the language from them.
+Always write "reason" in English.
 
 Answer ONLY with JSON:
-{"rota": "memoria|web|ambos", "motivo": "<one short sentence>", "consultas_web": ["..."]}"""
+{"route": "memory|web|both", "reason": "<one short sentence>", "web_queries": ["..."]}"""
 
 
 def _extrair_json(texto: str) -> dict:
@@ -52,17 +51,18 @@ def planejar(pergunta: str, memorias: list[dict]) -> dict:
 
     try:
         plano = _extrair_json(chat(config.PLANNER_MODEL, SYSTEM, user, json_mode=True))
-        rota = str(plano.get("rota", "")).strip().lower()
+        # O modelo responde em inglês; traduzimos para os nomes internos.
+        rota = ROTA_DO_MODELO.get(str(plano.get("route", "")).strip().lower(), "")
         if rota not in ROTAS:
             raise ValueError(f"rota inválida: {rota!r}")
-        consultas = [c for c in plano.get("consultas_web", []) if isinstance(c, str) and c.strip()]
+        consultas = [c for c in plano.get("web_queries", []) if isinstance(c, str) and c.strip()]
         if rota != "memoria" and not consultas:
             consultas = [pergunta]  # precisa buscar mas não veio consulta: usa a pergunta
         if rota == "memoria":
             consultas = []
-        return {"rota": rota, "motivo": plano.get("motivo", ""),
+        return {"rota": rota, "motivo": plano.get("reason", ""),
                 "consultas_web": consultas[:2], "fallback": False}
     except Exception as erro:
         # FALLBACK: se algo der errado, busca em tudo. A demo nunca trava.
-        return {"rota": "ambos", "motivo": f"Fallback ({type(erro).__name__}): buscando em tudo.",
+        return {"rota": "ambos", "motivo": f"Fallback ({type(erro).__name__}): searching everything.",
                 "consultas_web": [pergunta], "fallback": True}

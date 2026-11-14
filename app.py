@@ -109,7 +109,7 @@ if r:
 
     # 3. Resposta com citações
     st.subheader("Answer")
-    resposta = re.sub(r"\[(M\d+|W\d+)\]", r"`\1`", r["resposta"])  # destaca [M1], [W2]
+    resposta = re.sub(r"\[(M\d+|W\d+)\]", r" `\1`", r["resposta"])  # destaca [M1], [W2]
     st.markdown(resposta)
 
     # 4. Fontes
