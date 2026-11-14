@@ -32,6 +32,13 @@ if "historico" not in st.session_state:
     st.session_state.historico = []
 
 
+# Monitores ativos, lidos da Telem a cada recarga da tela.
+try:
+    ativos = sources.listar_monitores()
+except Exception as erro:
+    ativos = []
+    st.session_state.aviso = f"Could not list Telem monitors: {erro}"
+
 # ---------------- Barra lateral: usuário e economia acumulada ----------------
 with st.sidebar:
     st.header("👤 User")
@@ -68,9 +75,25 @@ with st.sidebar:
         "Estimates from Telem's price list; exact charges in the Telem console."
     )
 
+    st.header("🔔 Active Telem monitors")
+    if not ativos:
+        st.caption("None. Use “Watch this query” on a web answer to create one.")
+    for mon in ativos:
+        st.markdown(f"**{mon['consulta'][:80]}{'…' if len(mon['consulta']) > 80 else ''}**  \n"
+                    f"every {mon['frequencia']} · until {(mon['expira_em'] or '')[:10]} · agent: {mon['agente']}")
+        if st.button("⏹ Stop", key=f"stop-{mon['id']}"):
+            try:
+                sources.parar_monitor(mon["id"])
+                st.session_state.aviso = "Monitor stopped."
+            except Exception as erro:
+                st.session_state.aviso = f"Could not stop the monitor: {erro}"
+            st.rerun()
+
 
 # ---------------- Área principal ----------------
 st.title("🧭 Memory-aware Search Router")
+if st.session_state.get("aviso"):
+    st.toast(st.session_state.pop("aviso"))
 st.write("Assistants search the web for everything. This one first checks **what it knows about you**, "
          "then decides **whether** to search and **how** to search.")
 
@@ -113,36 +136,21 @@ if r:
         for q in plano["consultas_web"]:
             b.code(q, language=None, wrap_lines=True)
         # Telem Monitor: continuar acompanhando a consulta personalizada
-        if "monitores" not in st.session_state:
-            st.session_state.monitores = {}
         consulta = plano["consultas_web"][0]
-        mon = st.session_state.monitores.get(consulta)
+        mon = next((m for m in ativos if m["consulta"] == consulta), None)
         if mon is None:
             if b.button("🔔 Watch this query (Telem Monitor)",
                         help=f"Re-runs this personalized query every {sources.MONITOR_FREQUENCIA} "
                              f"for {sources.MONITOR_DURACAO}, and keeps what changed."):
                 try:
-                    st.session_state.monitores[consulta] = sources.criar_monitor(consulta)
-                    st.rerun()
+                    sources.criar_monitor(consulta)
+                    st.session_state.aviso = "Monitor created. Manage it in the sidebar."
                 except Exception as erro:
-                    b.error(f"Could not create the monitor: {erro}")
+                    st.session_state.aviso = f"Could not create the monitor: {erro}"
+                st.rerun()
         else:
             b.success(f"🔔 Watching every {mon['frequencia']} until {(mon['expira_em'] or '')[:10]} · "
-                      f"agent: {mon['agente']}  \nMonitor ID: `{mon['id']}`")
-            c1, c2 = b.columns(2)
-            if c1.button("↻ Check status"):
-                try:
-                    st.session_state.monitores[consulta] = sources.ver_monitor(mon["id"])
-                except Exception as erro:
-                    b.error(f"Could not read the monitor: {erro}")
-                st.rerun()
-            if c2.button("⏹ Stop watching"):
-                try:
-                    sources.parar_monitor(mon["id"])
-                except Exception as erro:
-                    b.error(f"Could not stop the monitor: {erro}")
-                st.session_state.monitores.pop(consulta, None)
-                st.rerun()
+                      f"agent: {mon['agente']}  \nStop it anytime in the sidebar.")
     else:
         st.success("✅ 0 web searches — answered from memory.")
 
