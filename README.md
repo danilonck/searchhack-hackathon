@@ -60,6 +60,11 @@ question + user
 On the 5 demo questions: **~$0.08 vs ~$0.22** for an always-search baseline (**−62%**, estimated from
 Telem's price list), with the same cited answers and faster responses.
 
+### Keep watching: Telem Monitors
+
+On any web answer, **🔔 Watch this query** turns the *personalized* query into a Telem Monitor
+(every 6 h, expires in 2 days to cap cost). The UI shows its status and a **Stop** button that deletes it.
+
 ### Safety
 
 - Web content is wrapped in `<web_source>` tags and treated as **untrusted data**: the answer prompt ignores any instructions found in pages (prompt-injection defense).
