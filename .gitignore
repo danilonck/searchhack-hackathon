@@ -11,3 +11,6 @@ __pycache__/
 # Sistema / Streamlit
 .DS_Store
 .streamlit/secrets.toml
+
+# Config local do Claude Code
+.claude/

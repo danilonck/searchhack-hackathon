@@ -42,6 +42,7 @@ def main():
             break
         time.sleep(5)
         print(".", end="", flush=True)
+    time.sleep(10)  # folga: o contador zera um pouco antes do delete terminar
     print(" ok")
 
     for i, texto in enumerate(MEMORIAS, 1):

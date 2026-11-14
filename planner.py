@@ -27,8 +27,12 @@ Example: question "good restaurants?" + memories "vegetarian", "in Sunnyvale",
 "budget up to $30" -> "vegetarian restaurants in Sunnyvale CA under $30".
 For "memoria", consultas_web must be [].
 
+LANGUAGE of "motivo": write it in the language the QUESTION is written in
+(English question -> English; Portuguese question -> Portuguese). The JSON keys
+are just identifiers: do NOT pick the language from them.
+
 Answer ONLY with JSON:
-{"rota": "memoria|web|ambos", "motivo": "<one short sentence, in the user's language>", "consultas_web": ["..."]}"""
+{"rota": "memoria|web|ambos", "motivo": "<one short sentence>", "consultas_web": ["..."]}"""
 
 
 def _extrair_json(texto: str) -> dict:
