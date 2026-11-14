@@ -102,3 +102,11 @@ def ver_monitor(monitor_id: str) -> dict:
 
 def parar_monitor(monitor_id: str) -> None:
     telem.monitors.delete(monitor_id)
+
+
+def listar_monitores() -> list[dict]:
+    """Monitores ATIVOS na conta, lidos da Telem (não da memória da tela).
+
+    Assim o botão Stop aparece mesmo depois de F5 ou de trocar de pergunta.
+    """
+    return [_monitor_info(m) for m in telem.monitors.list() if m.status == "active"]
