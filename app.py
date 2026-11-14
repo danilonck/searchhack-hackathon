@@ -8,6 +8,7 @@ import streamlit as st
 
 import config
 from pipeline import CUSTO_BUSCA_EVITADA_USD, executar
+from seed import PERSONAS
 
 st.set_page_config(page_title="Memory-aware Search Router", page_icon="🧭", layout="wide")
 
@@ -33,8 +34,15 @@ if "historico" not in st.session_state:
 # ---------------- Barra lateral: usuário e economia acumulada ----------------
 with st.sidebar:
     st.header("👤 User")
-    user_id = st.selectbox("Demo user (fictional)", [config.DEMO_USER_ID])
-    st.caption("Memories are stored per user in Mem0.")
+    user_id = st.selectbox(
+        "Demo user (fictional)",
+        list(PERSONAS),
+        format_func=lambda uid: PERSONAS[uid]["nome"],
+    )
+    st.caption(f"Mem0 user_id: `{user_id}` — memories are stored per person.")
+    with st.expander("What we remember about this user"):
+        for m in PERSONAS[user_id]["memorias"]:
+            st.markdown(f"- {m}")
 
     st.header("💰 Savings this session")
     h = st.session_state.historico
