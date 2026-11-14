@@ -70,3 +70,35 @@ def extrair_paginas(urls: list[str]) -> list[dict]:
         {"url": p["url"], "conteudo": p.get("raw_content") or ""}
         for p in resp.get("results", [])
     ]
+
+
+# ---------------- Telem Monitors: acompanhar uma consulta personalizada ----------------
+# Custo: cada execução do monitor é cobrada. Por isso: a cada 6h e expira em 2 dias
+# (~8 execuções). O botão "Stop" na tela apaga o monitor antes disso.
+MONITOR_FREQUENCIA = "6h"
+MONITOR_DURACAO = "2d"
+
+
+def _monitor_info(m) -> dict:
+    return {
+        "id": m.id,
+        "consulta": m.query,
+        "status": m.status,
+        "frequencia": m.frequency,
+        "expira_em": m.expires_at,
+        "agente": m.agent_state.status if m.agent_state else None,
+    }
+
+
+def criar_monitor(consulta: str) -> dict:
+    """Cria um Telem Monitor que repete a busca e guarda o que mudar."""
+    m = telem.monitors.create(consulta, frequency=MONITOR_FREQUENCIA, ttl=MONITOR_DURACAO)
+    return _monitor_info(m)
+
+
+def ver_monitor(monitor_id: str) -> dict:
+    return _monitor_info(telem.monitors.get(monitor_id))
+
+
+def parar_monitor(monitor_id: str) -> None:
+    telem.monitors.delete(monitor_id)

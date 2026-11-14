@@ -45,7 +45,7 @@
 ## 2:40 – 3:00 · Business and close
 
 > Business model: a drop-in layer for assistant builders, priced per routed query — cheaper than the searches it avoids.
-> Next: Telem Monitors, so the assistant can keep watching a personalized query for you.
+> And with Telem Monitors, one click keeps watching that personalized search for you.
 >
 > Search less. Search smarter. Search for *you*. Thank you.
 
@@ -56,7 +56,7 @@
 1. **Title** — "Memory-aware Search Router · Search less. Search smarter. Search for you." Your name, SearchHack (Telem AI Series).
 2. **Problem → Solution** — Left: "Assistants search everything, the same way, for everyone." Right: the 5-step flow (Mem0 → Planner → Telem → Tavily → cited answer).
 3. **Same question, two people** — the Alex vs. Maria table of rewritten queries (from the README).
-4. **Why Telem + business** — auto-routing + observability; customer = AI assistant builders; priced per routed query; next: Monitors.
+4. **Why Telem + business** — auto-routing + observability; customer = AI assistant builders; priced per routed query; also built: Telem Monitors.
 
 ## Q&A prep
 

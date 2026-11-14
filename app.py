@@ -7,6 +7,7 @@ import re
 import streamlit as st
 
 import config
+import sources
 from pipeline import CUSTO_BASE_USD, executar
 from seed import PERSONAS
 
@@ -111,6 +112,37 @@ if r:
         b.markdown("**Personalized web queries** (rewritten with memory)")
         for q in plano["consultas_web"]:
             b.code(q, language=None, wrap_lines=True)
+        # Telem Monitor: continuar acompanhando a consulta personalizada
+        if "monitores" not in st.session_state:
+            st.session_state.monitores = {}
+        consulta = plano["consultas_web"][0]
+        mon = st.session_state.monitores.get(consulta)
+        if mon is None:
+            if b.button("🔔 Watch this query (Telem Monitor)",
+                        help=f"Re-runs this personalized query every {sources.MONITOR_FREQUENCIA} "
+                             f"for {sources.MONITOR_DURACAO}, and keeps what changed."):
+                try:
+                    st.session_state.monitores[consulta] = sources.criar_monitor(consulta)
+                    st.rerun()
+                except Exception as erro:
+                    b.error(f"Could not create the monitor: {erro}")
+        else:
+            b.success(f"🔔 Watching every {mon['frequencia']} until {(mon['expira_em'] or '')[:10]} · "
+                      f"agent: {mon['agente']}  \nMonitor ID: `{mon['id']}`")
+            c1, c2 = b.columns(2)
+            if c1.button("↻ Check status"):
+                try:
+                    st.session_state.monitores[consulta] = sources.ver_monitor(mon["id"])
+                except Exception as erro:
+                    b.error(f"Could not read the monitor: {erro}")
+                st.rerun()
+            if c2.button("⏹ Stop watching"):
+                try:
+                    sources.parar_monitor(mon["id"])
+                except Exception as erro:
+                    b.error(f"Could not stop the monitor: {erro}")
+                st.session_state.monitores.pop(consulta, None)
+                st.rerun()
     else:
         st.success("✅ 0 web searches — answered from memory.")
 
