@@ -12,7 +12,7 @@ tavily = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
 telem = Telem(api_key=os.environ["TELEM_API_KEY"])
 
 
-def buscar_memoria(pergunta: str, user_id: str, top_k: int = 5) -> list[dict]:
+def buscar_memoria(pergunta: str, user_id: str, top_k: int = 10) -> list[dict]:
     """Busca no Mem0 as memórias deste usuário mais parecidas com a pergunta.
 
     Atenção: na busca, o usuário vai dentro de `filters` (o SDK rejeita user_id solto).
@@ -28,8 +28,7 @@ def buscar_web(consulta: str, num_results: int = 5) -> dict:
     """Busca na web pela Telem, deixando o auto-roteamento escolher os buscadores."""
     resp = telem.search(
         consulta,
-        auto_routing="accuracy",
-        max_routing_providers=3,  # no máximo 3 buscadores: menos custo
+        auto_routing="accuracy",  # a Telem escolhe os melhores buscadores
         num_results=num_results,
     )
 
@@ -52,6 +51,7 @@ def buscar_web(consulta: str, num_results: int = 5) -> dict:
         "interaction_id": resp.interaction_id,
         "status": resp.status,
         "escolhidos": roteamento[0].get("providers", []) if roteamento else [],
+        "topico": roteamento[0].get("topic") if roteamento else None,
         "buscadores": [
             {"nome": run.provider, "status": run.status,
              "latencia_ms": run.latency_ms, "n_resultados": len(run.results)}
@@ -63,7 +63,8 @@ def buscar_web(consulta: str, num_results: int = 5) -> dict:
 
 def extrair_paginas(urls: list[str]) -> list[dict]:
     """Usa a Tavily para baixar o texto limpo (markdown) de algumas páginas."""
-    resp = tavily.extract(urls=urls, format="markdown", extract_depth="basic")
+    # timeout curto: sites que bloqueiam robôs (Yelp, OpenTable) não travam a demo
+    resp = tavily.extract(urls=urls, format="markdown", extract_depth="basic", timeout=10)
     return [
         {"url": p["url"], "conteudo": p.get("raw_content") or ""}
         for p in resp.get("results", [])
