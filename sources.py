@@ -26,7 +26,12 @@ def buscar_memoria(pergunta: str, user_id: str, top_k: int = 5) -> list[dict]:
 
 def buscar_web(consulta: str, num_results: int = 5) -> dict:
     """Busca na web pela Telem, deixando o auto-roteamento escolher os buscadores."""
-    resp = telem.search(consulta, auto_routing="accuracy", num_results=num_results)
+    resp = telem.search(
+        consulta,
+        auto_routing="accuracy",
+        max_routing_providers=3,  # no máximo 3 buscadores: menos custo
+        num_results=num_results,
+    )
 
     # Junta os resultados de todos os buscadores e remove URLs repetidas.
     vistos, resultados = set(), []
