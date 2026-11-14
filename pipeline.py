@@ -7,9 +7,11 @@ from planner import planejar
 
 # Custos ESTIMADOS (tabela de preços da Telem: ~US$0,005 por buscador consultado).
 CUSTO_POR_BUSCADOR_USD = 0.005
-BUSCADORES_TIPICOS = 7          # o auto-roteamento da Telem costuma escolher ~7
 CUSTO_EXTRACAO_USD = 0.003      # estimativa (Tavily extract basic, 3 páginas)
-CUSTO_BUSCA_EVITADA_USD = BUSCADORES_TIPICOS * CUSTO_POR_BUSCADOR_USD + CUSTO_EXTRACAO_USD
+# Linha de base: um assistente que SEMPRE busca, sem otimizar, abre ~8 buscadores
+# por pergunta (o que medimos antes do FinOps: 7 roteados + Google Maps).
+BUSCADORES_SEM_OTIMIZAR = 8
+CUSTO_BASE_USD = BUSCADORES_SEM_OTIMIZAR * CUSTO_POR_BUSCADOR_USD + CUSTO_EXTRACAO_USD
 
 N_PAGINAS_EXTRAIR = 3
 
@@ -70,9 +72,10 @@ def executar(pergunta: str, user_id: str) -> dict:
     # Métricas de economia
     buscas_feitas = len(plano["consultas_web"])
     buscas_evitadas = 1 if plano["rota"] == "memoria" else 0
-    economia = buscas_evitadas * CUSTO_BUSCA_EVITADA_USD
     n_buscadores = sum(len(t["buscadores"]) for t in telem_meta)
     custo_web = n_buscadores * CUSTO_POR_BUSCADOR_USD + (CUSTO_EXTRACAO_USD if web else 0)
+    # Economia = o que a linha de base gastaria menos o que gastamos de fato.
+    economia = max(CUSTO_BASE_USD - custo_web, 0)
 
     return {
         "pergunta": pergunta,
@@ -85,5 +88,6 @@ def executar(pergunta: str, user_id: str) -> dict:
         "tempos": tempos,
         "metricas": {"buscas_web": buscas_feitas, "buscas_evitadas": buscas_evitadas,
                      "economia_usd": round(economia, 4),
-                     "custo_web_usd": round(custo_web, 4), "buscadores_consultados": n_buscadores},
+                     "custo_web_usd": round(custo_web, 4), "custo_base_usd": round(CUSTO_BASE_USD, 4),
+                     "buscadores_consultados": n_buscadores},
     }

@@ -7,7 +7,7 @@ import re
 import streamlit as st
 
 import config
-from pipeline import CUSTO_BUSCA_EVITADA_USD, executar
+from pipeline import CUSTO_BASE_USD, executar
 from seed import PERSONAS
 
 st.set_page_config(page_title="Memory-aware Search Router", page_icon="🧭", layout="wide")
@@ -44,7 +44,7 @@ with st.sidebar:
         for m in PERSONAS[user_id]["memorias"]:
             st.markdown(f"- {m}")
 
-    st.header("💰 Savings this session")
+    st.header("💰 FinOps this session")
     h = st.session_state.historico
     evitadas = sum(r["metricas"]["buscas_evitadas"] for r in h)
     feitas = sum(r["metricas"]["buscas_web"] for r in h)
@@ -55,9 +55,16 @@ with st.sidebar:
     c2.metric("Web searches avoided", evitadas)
     c1.metric("Web searches run", feitas)
     c2.metric("Est. saved", f"${economia:.3f}")
+    base_total = CUSTO_BASE_USD * len(h)
+    if base_total:
+        st.metric("Est. cost vs. always-search", f"${gasto:.3f}", f"-{100 * economia / base_total:.0f}%",
+                  delta_color="inverse")
     st.caption(
-        f"Estimate: an always-search assistant pays ~${CUSTO_BUSCA_EVITADA_USD:.3f} per question "
-        f"(Telem routes to ~7 providers × $0.005 + page extraction). Spent on web so far: ${gasto:.3f}."
+        f"Baseline: an assistant that always searches, unoptimized, opens ~8 providers per "
+        f"question (~${CUSTO_BASE_USD:.3f}). We skip search when memory answers, and when we "
+        f"search we send 1 query and let Telem auto-route among {', '.join(config.TELEM_PROVIDERS)} "
+        "(Telem may add a maps lookup for places). "
+        "Estimates from Telem's price list; exact charges in the Telem console."
     )
 
 
@@ -128,7 +135,9 @@ if r:
         k1.metric("Total time", f"{t['total_s']}s")
         k2.metric("Web searches", m["buscas_web"])
         k3.metric("Providers queried", m["buscadores_consultados"])
-        k4.metric("Est. web cost", f"${m['custo_web_usd']:.3f}")
+        k4.metric("Est. cost", f"${m['custo_web_usd']:.3f}",
+                  f"-{100 * m['economia_usd'] / m['custo_base_usd']:.0f}% vs always-search",
+                  delta_color="inverse")
 
         for tm in r["telem"]:
             st.markdown(f"**Telem auto-routing** for `{tm['consulta']}`  \n"
