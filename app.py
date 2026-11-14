@@ -100,10 +100,10 @@ if r:
     if plano["consultas_web"]:
         a, b = st.columns(2)
         a.markdown("**Your question**")
-        a.code(r["pergunta"], language=None)
+        a.code(r["pergunta"], language=None, wrap_lines=True)
         b.markdown("**Personalized web queries** (rewritten with memory)")
         for q in plano["consultas_web"]:
-            b.code(q, language=None)
+            b.code(q, language=None, wrap_lines=True)
     else:
         st.success("✅ 0 web searches — answered from memory.")
 
