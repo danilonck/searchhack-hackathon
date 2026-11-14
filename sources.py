@@ -28,7 +28,8 @@ def buscar_web(consulta: str, num_results: int = 5) -> dict:
     """Busca na web pela Telem, deixando o auto-roteamento escolher os buscadores."""
     resp = telem.search(
         consulta,
-        auto_routing="accuracy",  # a Telem escolhe os melhores buscadores
+        auto_routing="accuracy",  # a Telem escolhe os melhores buscadores...
+        providers_include=config.TELEM_PROVIDERS,  # ...mas só entre estes (FinOps)
         num_results=num_results,
     )
 

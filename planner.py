@@ -22,7 +22,7 @@ Decide where the answer must come from:
 - "both": it needs current web facts AND the memories change what to look for
   (location, diet, budget, schedule, tastes...).
 
-For "web" or "both", write 1 or 2 web search queries in English,
+For "web" or "both", write exactly 1 web search query in English,
 REWRITTEN with the relevant memory details so results are personalized.
 Example: question "good restaurants?" + memories "vegetarian", "in Sunnyvale",
 "budget up to $30" -> "vegetarian restaurants in Sunnyvale CA under $30".
@@ -61,7 +61,7 @@ def planejar(pergunta: str, memorias: list[dict]) -> dict:
         if rota == "memoria":
             consultas = []
         return {"rota": rota, "motivo": plano.get("reason", ""),
-                "consultas_web": consultas[:2], "fallback": False}
+                "consultas_web": consultas[:1], "fallback": False}
     except Exception as erro:
         # FALLBACK: se algo der errado, busca em tudo. A demo nunca trava.
         return {"rota": "ambos", "motivo": f"Fallback ({type(erro).__name__}): searching everything.",

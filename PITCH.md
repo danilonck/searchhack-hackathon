@@ -40,6 +40,8 @@
 
 > We decide *whether* to search. Telem decides *where*. Its auto-routing picks the right providers for each personalized query in one call, and its observability lets us show — and price — every step. Without Telem we'd be hard-coding one provider, or paying for all of them.
 
+> And it's FinOps by design: memory questions cost zero web calls, and web questions send one query to a small allow-list that Telem routes within. On our demo set that's about sixty percent cheaper than always searching — with the same cited answers.
+
 ## 2:40 – 3:00 · Business and close
 
 > Business model: a drop-in layer for assistant builders, priced per routed query — cheaper than the searches it avoids.
@@ -58,7 +60,7 @@
 
 ## Q&A prep
 
-- **"How much do you really save?"** — Estimates from Telem's price list: a routed search here hit ~7 providers (~$0.035) plus extraction. Memory-only answers skip all of it. Exact charges are in the Telem console.
+- **"How much do you really save?"** — Estimated from Telem's price list: unoptimized, one search fanned out to ~8 providers (~$0.04). We skip search when memory answers and cap web searches to 1 query over 3 allowed providers: ~$0.08 vs ~$0.22 on the 5 demo questions (−62%). Exact charges are in the Telem console.
 - **"What if the planner is wrong?"** — It falls back to searching everything, so the worst case is today's behavior.
 - **"Prompt injection from web pages?"** — Page content is wrapped as untrusted data; the answer prompt ignores instructions inside it.
 - **"Why not just always search?"** — Cost, latency (3 s vs. ~15 s) and relevance: a generic search can't know your diet or budget.

@@ -51,6 +51,15 @@ question + user
 - **Observability:** every search returns the chosen providers, per-provider latency and status, the routing topic and an `interaction_id` trace. The UI shows all of it.
 - **The router decides *whether* to search; Telem decides *where* to search.**
 
+### FinOps: two layers of cost control
+
+1. **Don't search** when memory answers: zero web calls.
+2. **Search lean** when needed: 1 personalized query, and Telem auto-routes among an allow-list
+   (`TELEM_PROVIDERS`, default `exa,tavily,brave`) instead of fanning out to every provider.
+
+On the 5 demo questions: **~$0.08 vs ~$0.22** for an always-search baseline (**−62%**, estimated from
+Telem's price list), with the same cited answers and faster responses.
+
 ### Safety
 
 - Web content is wrapped in `<web_source>` tags and treated as **untrusted data**: the answer prompt ignores any instructions found in pages (prompt-injection defense).
